@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.net.URL;
+
 import static com.lazerycode.selenium.filedownloader.HashCheckFile.hashType.MD5;
 import static com.lazerycode.selenium.filedownloader.HashCheckFile.hashType.SHA1;
 import static org.hamcrest.core.Is.is;
