@@ -19,13 +19,21 @@ package com.lazerycode.selenium.filedownloader;
 import java.io.IOException;
 import java.net.*;
 
-public class LinkStatusChecker {
+public class URLStatusChecker {
 
     private URL linkToCheck;
     private String httpRequestMethod = "GET";
 
-    public LinkStatusChecker(String linkToCheck) throws MalformedURLException, URISyntaxException {
-        updateLinkToCheck(linkToCheck);
+    public URLStatusChecker(String linkToCheck) throws MalformedURLException, URISyntaxException {
+        updateURLToCheck(linkToCheck);
+    }
+
+    public URLStatusChecker(URI linkToCheck) throws MalformedURLException, URISyntaxException {
+        updateURLToCheck(linkToCheck);
+    }
+
+    public URLStatusChecker(URL linkToCheck) throws MalformedURLException, URISyntaxException {
+        updateURLToCheck(linkToCheck);
     }
 
     /**
@@ -35,8 +43,27 @@ public class LinkStatusChecker {
      * @throws MalformedURLException
      * @throws URISyntaxException
      */
-    public void updateLinkToCheck(String linkToCheck) throws MalformedURLException, URISyntaxException {
+    public void updateURLToCheck(String linkToCheck) throws MalformedURLException, URISyntaxException {
         this.linkToCheck = new URI(linkToCheck).toURL();
+    }
+
+    /**
+     * Specify a URL that you want to perform an HTTP Status Check upon
+     *
+     * @param linkToCheck
+     * @throws MalformedURLException
+     */
+    public void updateURLToCheck(URI linkToCheck) throws MalformedURLException {
+        this.linkToCheck = linkToCheck.toURL();
+    }
+
+    /**
+     * Specify a URL that you want to perform an HTTP Status Check upon
+     *
+     * @param linkToCheck
+     */
+    public void updateURLToCheck(URL linkToCheck) {
+        this.linkToCheck = linkToCheck;
     }
 
     /**
@@ -46,6 +73,7 @@ public class LinkStatusChecker {
      */
     public void setHTTPRequestMethod(String requestMethod) {
         //Possible somebody may wish to use POST or PUT or something else.
+        //TODO Add some validation here
         this.httpRequestMethod = requestMethod;
     }
 
