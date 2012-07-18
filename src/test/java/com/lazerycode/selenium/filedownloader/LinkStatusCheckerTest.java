@@ -1,5 +1,3 @@
-package com.lazerycode.selenium.filedownloader;
-
 /*
  * Copyright (c) 2010-2012 Lazery Attack - http://www.lazeryattack.com
  *
@@ -15,6 +13,8 @@ package com.lazerycode.selenium.filedownloader;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package com.lazerycode.selenium.filedownloader;
 
 import com.lazerycode.selenium.JettyServer;
 import org.junit.AfterClass;

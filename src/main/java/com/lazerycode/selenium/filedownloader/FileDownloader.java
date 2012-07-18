@@ -1,5 +1,3 @@
-package com.lazerycode.selenium.filedownloader;
-
 /*
  * Copyright (c) 2010-2012 Lazery Attack - http://www.lazeryattack.com
  *
@@ -16,6 +14,7 @@ package com.lazerycode.selenium.filedownloader;
  * limitations under the License.
  */
 
+package com.lazerycode.selenium.filedownloader;
 
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
@@ -25,8 +24,6 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import java.io.*;
 import java.net.URL;
 import java.util.Set;
-
-import org.apache.commons.io.FileUtils;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
