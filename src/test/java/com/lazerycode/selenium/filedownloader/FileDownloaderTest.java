@@ -17,11 +17,18 @@
 package com.lazerycode.selenium.filedownloader;
 
 import com.lazerycode.selenium.JettyServer;
+import org.apache.log4j.Logger;
 import org.junit.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
+import java.io.File;
+
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class FileDownloaderTest {
 
@@ -51,7 +58,9 @@ public class FileDownloaderTest {
         FileDownloader downloadTestFile = new FileDownloader(driver);
         driver.get(webServerURL + ":" + webServerPort + "/downloadTest.html");
         WebElement downloadLink = driver.findElement(By.id("fileToDownload"));
-        downloadTestFile.fileDownloader(downloadLink);
+        String downloadedFileAbsoluteLocation = downloadTestFile.fileDownloader(downloadLink);
+
+        assertThat(new File(downloadedFileAbsoluteLocation).exists(), is(equalTo(true)));
     }
 
     @Test
@@ -59,6 +68,8 @@ public class FileDownloaderTest {
         FileDownloader downloadTestFile = new FileDownloader(driver);
         driver.get(webServerURL + ":" + webServerPort + "/downloadTest.html");
         WebElement image = driver.findElement(By.id("ebselenImage"));
-        downloadTestFile.imageDownloader(image);
+        String downloadedImageAbsoluteLocation = downloadTestFile.imageDownloader(image);
+
+        assertThat(new File(downloadedImageAbsoluteLocation).exists(), is(equalTo(true)));
     }
 }
