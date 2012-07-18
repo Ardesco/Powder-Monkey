@@ -28,6 +28,13 @@ public class LinkStatusChecker {
         updateLinkToCheck(linkToCheck);
     }
 
+    /**
+     * Specify a URL that you want to perform an HTTP Status Check upon
+     *
+     * @param linkToCheck
+     * @throws MalformedURLException
+     * @throws URISyntaxException
+     */
     public void updateLinkToCheck(String linkToCheck) throws MalformedURLException, URISyntaxException {
         this.linkToCheck = new URI(linkToCheck).toURL();
     }
@@ -42,6 +49,12 @@ public class LinkStatusChecker {
         this.httpRequestMethod = requestMethod;
     }
 
+    /**
+     * Perform an HTTP Status check and return the response code
+     *
+     * @return
+     * @throws IOException
+     */
     public int getHTTPStatusCode() throws IOException {
         HttpURLConnection connection = (HttpURLConnection) this.linkToCheck.openConnection();
         connection.setRequestMethod(this.httpRequestMethod);
