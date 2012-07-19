@@ -60,7 +60,7 @@ public class FileDownloaderTest {
         FileDownloader downloadTestFile = new FileDownloader(driver);
         driver.get(webServerURL + ":" + webServerPort + "/downloadTest.html");
         WebElement downloadLink = driver.findElement(By.id("fileToDownload"));
-        String downloadedFileAbsoluteLocation = downloadTestFile.fileDownloader(downloadLink);
+        String downloadedFileAbsoluteLocation = downloadTestFile.downloadFile(downloadLink);
 
         assertThat(new File(downloadedFileAbsoluteLocation).exists(), is(equalTo(true)));
     }
@@ -70,7 +70,7 @@ public class FileDownloaderTest {
         FileDownloader downloadTestFile = new FileDownloader(driver);
         driver.get(webServerURL + ":" + webServerPort + "/downloadTest.html");
         WebElement image = driver.findElement(By.id("ebselenImage"));
-        String downloadedImageAbsoluteLocation = downloadTestFile.imageDownloader(image);
+        String downloadedImageAbsoluteLocation = downloadTestFile.downloadImage(image);
 
         assertThat(new File(downloadedImageAbsoluteLocation).exists(), is(equalTo(true)));
     }
