@@ -21,8 +21,7 @@ import org.junit.Test;
 import java.io.File;
 import java.net.URL;
 
-import static com.lazerycode.selenium.filedownloader.HashCheckFile.hashType.MD5;
-import static com.lazerycode.selenium.filedownloader.HashCheckFile.hashType.SHA1;
+import static com.lazerycode.selenium.filedownloader.HashType.*;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;

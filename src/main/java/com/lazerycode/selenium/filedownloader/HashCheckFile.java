@@ -25,32 +25,27 @@ import java.io.IOException;
 
 public class HashCheckFile {
 
-    public static enum hashType {
-        MD5,
-        SHA1;
-    }
-
-    private hashType typeOfHash;
+    private HashType typeOfHash;
     private String hash;
     private File fileToCheck;
 
-    public HashCheckFile(File fileToCheck, String hash, hashType hashType) throws FileNotFoundException{
+    public HashCheckFile(File fileToCheck, String hash, HashType hashType) throws FileNotFoundException {
         fileToCheck(fileToCheck);
         hashDetails(hash, hashType);
     }
 
-    public void fileToCheck(File fileToCheck) throws FileNotFoundException{
-        if(!fileToCheck.exists()) throw new FileNotFoundException(fileToCheck + " does not exist!");
+    public void fileToCheck(File fileToCheck) throws FileNotFoundException {
+        if (!fileToCheck.exists()) throw new FileNotFoundException(fileToCheck + " does not exist!");
         this.fileToCheck = fileToCheck;
     }
 
-    public void hashDetails(String hash, hashType hashType){
+    public void hashDetails(String hash, HashType hashType) {
         this.hash = hash;
         this.typeOfHash = hashType;
     }
 
-    public boolean hasAValidHash() throws FileNotFoundException, IOException{
-        switch(this.typeOfHash){
+    public boolean hasAValidHash() throws IOException {
+        switch (this.typeOfHash) {
             case MD5:
                 if (this.hash.equals(DigestUtils.md5Hex(new FileInputStream(this.fileToCheck)))) return true;
                 break;
