@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.lazerycode.selenium.filedownloader;
+package com.lazerycode.selenium.urlstatuschecker;
 
 import java.io.IOException;
 import java.net.*;
@@ -71,10 +71,8 @@ public class URLStatusChecker {
      *
      * @param requestMethod
      */
-    public void setHTTPRequestMethod(String requestMethod) {
-        //Possible somebody may wish to use POST or PUT or something else.
-        //TODO Add some validation here
-        this.httpRequestMethod = requestMethod;
+    public void setHTTPRequestMethod(RequestMethod requestMethod) {
+        this.httpRequestMethod = requestMethod.toString();
     }
 
     /**
