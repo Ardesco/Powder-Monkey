@@ -35,6 +35,7 @@ public class FileDownloader {
     private WebDriver driver;
     private String localDownloadPath = System.getProperty("java.io.tmpdir");
     private boolean followRedirects = true;
+    private boolean mimicWebDriverCookieState = true;
     private int httpStatusOfLastDownloadAttempt;
 
     public FileDownloader(WebDriver driverObject) {
@@ -100,6 +101,17 @@ public class FileDownloader {
     }
 
     /**
+     * Mimic the cookie state of WebDriver (Defaults to true)
+     * This will enable you to access files that are only available when logged in.
+     * If set to false the connection will be made as an anonymouse user
+     *
+     * @param value
+     */
+    public void mimicWebDriverCookieState(boolean value) {
+        this.mimicWebDriverCookieState = value;
+    }
+
+    /**
      * Load in all the cookies WebDriver currently knows about so that we can mimic the browser cookie state
      *
      * @param seleniumCookieSet
@@ -149,7 +161,8 @@ public class FileDownloader {
         HttpClient client = new HttpClient();
         client.getParams().setCookiePolicy(CookiePolicy.RFC_2965);
         client.setHostConfiguration(setHostDetails(fileToDownload.getHost(), fileToDownload.getPort()));
-        client.setState(mimicCookieState(this.driver.manage().getCookies()));
+        LOG.info("Mimic WebDriver cookie state: " + this.mimicWebDriverCookieState);
+        if (this.mimicWebDriverCookieState) client.setState(mimicCookieState(this.driver.manage().getCookies()));
         HttpMethod getFileRequest = new GetMethod(fileToDownload.getPath());
         getFileRequest.setFollowRedirects(this.followRedirects);
         LOG.info("Follow redirects when downloading: " + this.followRedirects);
