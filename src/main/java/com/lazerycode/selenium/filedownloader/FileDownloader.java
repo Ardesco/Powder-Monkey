@@ -16,16 +16,23 @@
 
 package com.lazerycode.selenium.filedownloader;
 
-import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.cookie.CookiePolicy;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.protocol.BasicHttpContext;
 import org.apache.log4j.Logger;
+import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Set;
 
@@ -117,28 +124,18 @@ public class FileDownloader {
      * @param seleniumCookieSet
      * @return
      */
-    private HttpState mimicCookieState(Set<org.openqa.selenium.Cookie> seleniumCookieSet) {
-        HttpState mimicWebDriverCookieState = new HttpState();
-        for (org.openqa.selenium.Cookie seleniumCookie : seleniumCookieSet) {
-            Cookie httpClientCookie = new Cookie(seleniumCookie.getDomain(), seleniumCookie.getName(), seleniumCookie.getValue(), seleniumCookie.getPath(), seleniumCookie.getExpiry(), seleniumCookie.isSecure());
-            mimicWebDriverCookieState.addCookie(httpClientCookie);
+    private BasicCookieStore mimicCookieState(Set<Cookie> seleniumCookieSet) {
+        BasicCookieStore mimicWebDriverCookieStore = new BasicCookieStore();
+        for (Cookie seleniumCookie : seleniumCookieSet) {
+            BasicClientCookie duplicateCookie = new BasicClientCookie(seleniumCookie.getName(), seleniumCookie.getValue());
+            duplicateCookie.setDomain(seleniumCookie.getDomain());
+            duplicateCookie.setSecure(seleniumCookie.isSecure());
+            duplicateCookie.setExpiryDate(seleniumCookie.getExpiry());
+            duplicateCookie.setPath(seleniumCookie.getPath());
+            mimicWebDriverCookieStore.addCookie(duplicateCookie);
         }
 
-        return mimicWebDriverCookieState;
-    }
-
-    /**
-     * Set the host configuration based upon the URL of the file/image that will be downloaded
-     *
-     * @param hostURL
-     * @param hostPort
-     * @return
-     */
-    private HostConfiguration setHostDetails(String hostURL, int hostPort) {
-        HostConfiguration hostConfig = new HostConfiguration();
-        hostConfig.setHost(hostURL, hostPort);
-
-        return hostConfig;
+        return mimicWebDriverCookieStore;
     }
 
     /**
@@ -150,7 +147,7 @@ public class FileDownloader {
      * @throws IOException
      * @throws NullPointerException
      */
-    private String downloader(WebElement element, String attribute) throws IOException, NullPointerException {
+    private String downloader(WebElement element, String attribute) throws IOException, NullPointerException, URISyntaxException {
         String fileToDownloadLocation = element.getAttribute(attribute);
         if (fileToDownloadLocation.trim().equals("")) throw new NullPointerException("The element you have specified does not link to anything!");
 
@@ -158,21 +155,24 @@ public class FileDownloader {
         File downloadedFile = new File(this.localDownloadPath + fileToDownload.getFile().replaceFirst("/|\\\\", ""));
         if (downloadedFile.canWrite() == false) downloadedFile.setWritable(true);
 
-        HttpClient client = new HttpClient();
-        client.getParams().setCookiePolicy(CookiePolicy.RFC_2965);
-        client.setHostConfiguration(setHostDetails(fileToDownload.getHost(), fileToDownload.getPort()));
-        LOG.info("Mimic WebDriver cookie state: " + this.mimicWebDriverCookieState);
-        if (this.mimicWebDriverCookieState) client.setState(mimicCookieState(this.driver.manage().getCookies()));
-        HttpMethod getFileRequest = new GetMethod(fileToDownload.getPath());
-        getFileRequest.setFollowRedirects(this.followRedirects);
-        LOG.info("Follow redirects when downloading: " + this.followRedirects);
+        HttpClient client = new DefaultHttpClient();
+        BasicHttpContext localContext = new BasicHttpContext();
 
-        LOG.info("Sending GET request for: " + fileToDownload.toExternalForm());
-        this.httpStatusOfLastDownloadAttempt = client.executeMethod(getFileRequest);
-        LOG.info("HTTP GET request status: " + this.httpStatusOfLastDownloadAttempt);
+        LOG.info("Mimic WebDriver cookie state: " + this.mimicWebDriverCookieState);
+        if (this.mimicWebDriverCookieState) {
+            localContext.setAttribute(ClientContext.COOKIE_STORE, mimicCookieState(this.driver.manage().getCookies()));
+        }
+        //need to ENUM the below and use a generic
+        HttpGet httpget = new HttpGet(fileToDownload.toURI());
+//        getFileRequest.setFollowRedirects(this.followRedirects);
+//        LOG.info("Follow redirects when downloading: " + this.followRedirects);
+
+        LOG.info("Sending GET request for: " + httpget.getURI());
+        HttpResponse response = client.execute(httpget, localContext);
+        LOG.info("HTTP GET request status: " + response.getStatusLine().getStatusCode());
         LOG.info("Downloading file: " + downloadedFile.getName());
-        FileUtils.copyInputStreamToFile(getFileRequest.getResponseBodyAsStream(), downloadedFile);
-        getFileRequest.releaseConnection();
+        FileUtils.copyInputStreamToFile(response.getEntity().getContent(), downloadedFile);
+        response.getEntity().getContent().close();
 
         String downloadedFileAbsolutePath = downloadedFile.getAbsolutePath();
         LOG.info("File downloaded to '" + downloadedFileAbsolutePath + "'");

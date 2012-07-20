@@ -16,25 +16,37 @@
 
 package com.lazerycode.selenium.urlstatuschecker;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.log4j.Logger;
+import org.openqa.selenium.Cookie;
+import org.openqa.selenium.WebDriver;
+
 import java.io.IOException;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Set;
 
 public class URLStatusChecker {
 
-    private URL linkToCheck;
+    private static final Logger LOG = Logger.getLogger(URLStatusChecker.class);
+    private URI linkToCheck;
+    private WebDriver driver;
+    private boolean mimicWebDriverCookieState = true;
     private String httpRequestMethod = "GET";
 
-    public URLStatusChecker(String linkToCheck) throws MalformedURLException, URISyntaxException {
-        updateURLToCheck(linkToCheck);
+    public URLStatusChecker(WebDriver driverObject) throws MalformedURLException, URISyntaxException {
+        this.driver = driverObject;
     }
 
-    public URLStatusChecker(URI linkToCheck) throws MalformedURLException, URISyntaxException {
-        updateURLToCheck(linkToCheck);
-    }
-
-    public URLStatusChecker(URL linkToCheck) throws MalformedURLException, URISyntaxException {
-        updateURLToCheck(linkToCheck);
-    }
 
     /**
      * Specify a URL that you want to perform an HTTP Status Check upon
@@ -43,8 +55,8 @@ public class URLStatusChecker {
      * @throws MalformedURLException
      * @throws URISyntaxException
      */
-    public void updateURLToCheck(String linkToCheck) throws MalformedURLException, URISyntaxException {
-        this.linkToCheck = new URI(linkToCheck).toURL();
+    public void setURIToCheck(String linkToCheck) throws MalformedURLException, URISyntaxException {
+        this.linkToCheck = new URI(linkToCheck);
     }
 
     /**
@@ -53,8 +65,8 @@ public class URLStatusChecker {
      * @param linkToCheck
      * @throws MalformedURLException
      */
-    public void updateURLToCheck(URI linkToCheck) throws MalformedURLException {
-        this.linkToCheck = linkToCheck.toURL();
+    public void setURIToCheck(URI linkToCheck) throws MalformedURLException {
+        this.linkToCheck = linkToCheck;
     }
 
     /**
@@ -62,8 +74,8 @@ public class URLStatusChecker {
      *
      * @param linkToCheck
      */
-    public void updateURLToCheck(URL linkToCheck) {
-        this.linkToCheck = linkToCheck;
+    public void setURIToCheck(URL linkToCheck) throws URISyntaxException {
+        this.linkToCheck = linkToCheck.toURI();
     }
 
     /**
@@ -82,10 +94,52 @@ public class URLStatusChecker {
      * @throws IOException
      */
     public int getHTTPStatusCode() throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) this.linkToCheck.openConnection();
-        connection.setRequestMethod(this.httpRequestMethod);
-        connection.connect();
 
-        return connection.getResponseCode();
+        HttpClient client = new DefaultHttpClient();
+        BasicHttpContext localContext = new BasicHttpContext();
+
+        LOG.info("Mimic WebDriver cookie state: " + this.mimicWebDriverCookieState);
+        if (this.mimicWebDriverCookieState) {
+            localContext.setAttribute(ClientContext.COOKIE_STORE, mimicCookieState(this.driver.manage().getCookies()));
+        }
+        //need to ENUM the below and use a generic
+        HttpGet httpget = new HttpGet(this.linkToCheck);
+
+        LOG.info("Sending GET request for: " + httpget.getURI());
+        HttpResponse response = client.execute(httpget, localContext);
+        LOG.info("HTTP GET request status: " + response.getStatusLine().getStatusCode());
+
+        return response.getStatusLine().getStatusCode();
+    }
+
+    /**
+     * Mimic the cookie state of WebDriver (Defaults to true)
+     * This will enable you to access files that are only available when logged in.
+     * If set to false the connection will be made as an anonymouse user
+     *
+     * @param value
+     */
+    public void mimicWebDriverCookieState(boolean value) {
+        this.mimicWebDriverCookieState = value;
+    }
+
+    /**
+     * Load in all the cookies WebDriver currently knows about so that we can mimic the browser cookie state
+     *
+     * @param seleniumCookieSet
+     * @return
+     */
+    private BasicCookieStore mimicCookieState(Set<Cookie> seleniumCookieSet) {
+        BasicCookieStore mimicWebDriverCookieStore = new BasicCookieStore();
+        for (Cookie seleniumCookie : seleniumCookieSet) {
+            BasicClientCookie duplicateCookie = new BasicClientCookie(seleniumCookie.getName(), seleniumCookie.getValue());
+            duplicateCookie.setDomain(seleniumCookie.getDomain());
+            duplicateCookie.setSecure(seleniumCookie.isSecure());
+            duplicateCookie.setExpiryDate(seleniumCookie.getExpiry());
+            duplicateCookie.setPath(seleniumCookie.getPath());
+            mimicWebDriverCookieStore.addCookie(duplicateCookie);
+        }
+
+        return mimicWebDriverCookieStore;
     }
 }
