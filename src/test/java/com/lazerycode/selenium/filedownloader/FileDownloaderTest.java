@@ -63,6 +63,7 @@ public class FileDownloaderTest {
         String downloadedFileAbsoluteLocation = downloadTestFile.downloadFile(downloadLink);
 
         assertThat(new File(downloadedFileAbsoluteLocation).exists(), is(equalTo(true)));
+        assertThat(downloadTestFile.getHTTPStatusOfLastDownloadAttempt(), is(equalTo(200)));
     }
 
     @Test
@@ -73,5 +74,6 @@ public class FileDownloaderTest {
         String downloadedImageAbsoluteLocation = downloadTestFile.downloadImage(image);
 
         assertThat(new File(downloadedImageAbsoluteLocation).exists(), is(equalTo(true)));
+        assertThat(downloadTestFile.getHTTPStatusOfLastDownloadAttempt(), is(equalTo(200)));
     }
 }

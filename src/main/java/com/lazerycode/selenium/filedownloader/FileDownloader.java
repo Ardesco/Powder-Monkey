@@ -43,7 +43,7 @@ public class FileDownloader {
     private String localDownloadPath = System.getProperty("java.io.tmpdir");
     private boolean followRedirects = true;
     private boolean mimicWebDriverCookieState = true;
-    private int httpStatusOfLastDownloadAttempt;
+    private int httpStatusOfLastDownloadAttempt = 0;
 
     public FileDownloader(WebDriver driverObject) {
         this.driver = driverObject;
@@ -103,7 +103,7 @@ public class FileDownloader {
      *
      * @return
      */
-    public int httpStatusOfLastDownloadAttempt() {
+    public int getHTTPStatusOfLastDownloadAttempt() {
         return this.httpStatusOfLastDownloadAttempt;
     }
 
@@ -169,7 +169,8 @@ public class FileDownloader {
 
         LOG.info("Sending GET request for: " + httpget.getURI());
         HttpResponse response = client.execute(httpget, localContext);
-        LOG.info("HTTP GET request status: " + response.getStatusLine().getStatusCode());
+        this.httpStatusOfLastDownloadAttempt = response.getStatusLine().getStatusCode();
+        LOG.info("HTTP GET request status: " + this.httpStatusOfLastDownloadAttempt);
         LOG.info("Downloading file: " + downloadedFile.getName());
         FileUtils.copyInputStreamToFile(response.getEntity().getContent(), downloadedFile);
         response.getEntity().getContent().close();
