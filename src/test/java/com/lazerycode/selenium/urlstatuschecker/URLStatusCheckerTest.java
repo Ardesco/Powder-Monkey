@@ -108,4 +108,39 @@ public class URLStatusCheckerTest {
         urlChecker.setHTTPRequestMethod(RequestMethod.HEAD);
         assertThat(urlChecker.getHTTPStatusCode(), is(equalTo(404)));
     }
+
+    @Test
+    public void statusCode200FromURLUsingOptions() throws Exception {
+        urlChecker.setURIToCheck(this.downloadURI200.toURL());
+        urlChecker.setHTTPRequestMethod(RequestMethod.OPTIONS);
+        assertThat(urlChecker.getHTTPStatusCode(), is(equalTo(200)));
+    }
+
+    @Test
+    public void statusCode200FromURLUsingPost() throws Exception {
+        urlChecker.setURIToCheck(this.downloadURI200.toURL());
+        urlChecker.setHTTPRequestMethod(RequestMethod.POST);
+        assertThat(urlChecker.getHTTPStatusCode(), is(equalTo(200)));
+    }
+
+    @Test
+    public void statusCode405FromURLUsingPut() throws Exception {
+        urlChecker.setURIToCheck(this.downloadURI200.toURL());
+        urlChecker.setHTTPRequestMethod(RequestMethod.PUT);
+        assertThat(urlChecker.getHTTPStatusCode(), is(equalTo(405)));
+    }
+
+    @Test
+    public void statusCode405FromURLUsingTrace() throws Exception {
+        urlChecker.setURIToCheck(this.downloadURI200.toURL());
+        urlChecker.setHTTPRequestMethod(RequestMethod.TRACE);
+        assertThat(urlChecker.getHTTPStatusCode(), is(equalTo(405)));
+    }
+
+    @Test
+    public void statusCode405FromURLUsingDelete() throws Exception {
+        urlChecker.setURIToCheck(this.downloadURI200.toURL());
+        urlChecker.setHTTPRequestMethod(RequestMethod.DELETE);
+        assertThat(urlChecker.getHTTPStatusCode(), is(equalTo(405)));
+    }
 }
