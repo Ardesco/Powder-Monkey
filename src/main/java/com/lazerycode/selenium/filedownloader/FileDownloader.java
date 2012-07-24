@@ -20,10 +20,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.Cookie;
@@ -162,10 +164,12 @@ public class FileDownloader {
         if (this.mimicWebDriverCookieState) {
             localContext.setAttribute(ClientContext.COOKIE_STORE, mimicCookieState(this.driver.manage().getCookies()));
         }
-        //need to ENUM the below and use a generic
+
+        //TODO provide the ability to do different HTTP Requests?
         HttpGet httpget = new HttpGet(fileToDownload.toURI());
-//        getFileRequest.setFollowRedirects(this.followRedirects);
-//        LOG.info("Follow redirects when downloading: " + this.followRedirects);
+        HttpParams httpRequestParameters = httpget.getParams();
+        httpRequestParameters.setParameter(ClientPNames.HANDLE_REDIRECTS, this.followRedirects);
+        httpget.setParams(httpRequestParameters);
 
         LOG.info("Sending GET request for: " + httpget.getURI());
         HttpResponse response = client.execute(httpget, localContext);
