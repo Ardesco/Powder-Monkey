@@ -19,10 +19,12 @@ package com.lazerycode.selenium.urlstatuschecker;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.Cookie;
@@ -41,6 +43,7 @@ public class URLStatusChecker {
     private URI linkToCheck;
     private WebDriver driver;
     private boolean mimicWebDriverCookieState = true;
+    private boolean followRedirects = false;
     private RequestMethod httpRequestMethod = RequestMethod.GET;
 
     public URLStatusChecker(WebDriver driverObject) throws MalformedURLException, URISyntaxException {
@@ -88,6 +91,17 @@ public class URLStatusChecker {
     }
 
     /**
+     * Should redirects be followed before returning status code?
+     * If set to true a 302 will not be returned, instead you will get the status code after the redirect has been followed
+     * DEFAULT: false
+     *
+     * @param value
+     */
+    public void followRedirects(Boolean value) {
+        this.followRedirects = value;
+    }
+
+    /**
      * Perform an HTTP Status check and return the response code
      *
      * @return
@@ -104,6 +118,9 @@ public class URLStatusChecker {
         }
         HttpRequestBase requestMethod = this.httpRequestMethod.getRequestMethod();
         requestMethod.setURI(this.linkToCheck);
+        HttpParams httpRequestParameters = requestMethod.getParams();
+        httpRequestParameters.setParameter(ClientPNames.HANDLE_REDIRECTS, this.followRedirects);
+        requestMethod.setParams(httpRequestParameters);
 
         LOG.info("Sending " + requestMethod.getMethod() + " request for: " + requestMethod.getURI());
         HttpResponse response = client.execute(requestMethod, localContext);
