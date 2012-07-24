@@ -16,23 +16,24 @@
 
 package com.lazerycode.selenium.urlstatuschecker;
 
+import org.apache.http.client.methods.*;
+
 public enum RequestMethod {
-    OPTIONS("OPTIONS"),
-    GET("GET"),
-    HEAD("HEAD"),
-    POST("POST"),
-    PUT("PUT"),
-    DELETE("DELETE"),
-    TRACE("TRACE"),
-    CONNECT("CONNECT");
+    OPTIONS(new HttpOptions()),
+    GET(new HttpGet()),
+    HEAD(new HttpHead()),
+    POST(new HttpPost()),
+    PUT(new HttpPut()),
+    DELETE(new HttpDelete()),
+    TRACE(new HttpTrace());
 
-    private final String requestMethod;
+    private final HttpRequestBase requestMethod;
 
-    RequestMethod(String requestMethod) {
+    RequestMethod(HttpRequestBase requestMethod) {
         this.requestMethod = requestMethod;
     }
 
-    public String toString() {
+    public HttpRequestBase getRequestMethod() {
         return this.requestMethod;
     }
 }

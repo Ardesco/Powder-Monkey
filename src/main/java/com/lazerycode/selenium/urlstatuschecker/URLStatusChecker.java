@@ -19,6 +19,7 @@ package com.lazerycode.selenium.urlstatuschecker;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -41,7 +42,7 @@ public class URLStatusChecker {
     private URI linkToCheck;
     private WebDriver driver;
     private boolean mimicWebDriverCookieState = true;
-    private String httpRequestMethod = "GET";
+    private RequestMethod httpRequestMethod = RequestMethod.GET;
 
     public URLStatusChecker(WebDriver driverObject) throws MalformedURLException, URISyntaxException {
         this.driver = driverObject;
@@ -84,7 +85,7 @@ public class URLStatusChecker {
      * @param requestMethod
      */
     public void setHTTPRequestMethod(RequestMethod requestMethod) {
-        this.httpRequestMethod = requestMethod.toString();
+        this.httpRequestMethod = requestMethod;
     }
 
     /**
@@ -102,12 +103,12 @@ public class URLStatusChecker {
         if (this.mimicWebDriverCookieState) {
             localContext.setAttribute(ClientContext.COOKIE_STORE, mimicCookieState(this.driver.manage().getCookies()));
         }
-        //need to ENUM the below and use a generic
-        HttpGet httpget = new HttpGet(this.linkToCheck);
+        HttpRequestBase requestMethod = this.httpRequestMethod.getRequestMethod();
+        requestMethod.setURI(this.linkToCheck);
 
-        LOG.info("Sending GET request for: " + httpget.getURI());
-        HttpResponse response = client.execute(httpget, localContext);
-        LOG.info("HTTP GET request status: " + response.getStatusLine().getStatusCode());
+        LOG.info("Sending " + requestMethod.getMethod() + " request for: " + requestMethod.getURI());
+        HttpResponse response = client.execute(requestMethod, localContext);
+        LOG.info("HTTP " + requestMethod.getMethod() + " request status: " + response.getStatusLine().getStatusCode());
 
         return response.getStatusLine().getStatusCode();
     }
