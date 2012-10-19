@@ -16,7 +16,7 @@
 
 package com.lazerycode.selenium.filedownloader;
 
-public enum HashType {
+public enum TypeOfHash {
     MD5,
     SHA1;
 }

@@ -27,7 +27,7 @@ import java.io.IOException;
 public class CheckFileHash {
 
     private static final Logger LOG = Logger.getLogger(CheckFileHash.class);
-    private HashType typeOfHash = null;
+    private TypeOfHash typeOfOfHash = null;
     private String expectedFileHash = null;
     private File fileToCheck = null;
 
@@ -47,11 +47,11 @@ public class CheckFileHash {
      * Hash details used to perform the Hash check
      *
      * @param hash
-     * @param hashType
+     * @param typeOfHash
      */
-    public void hashDetails(String hash, HashType hashType) {
+    public void hashDetails(String hash, TypeOfHash typeOfHash) {
         this.expectedFileHash = hash;
-        this.typeOfHash = hashType;
+        this.typeOfOfHash = typeOfHash;
     }
 
     /**
@@ -62,12 +62,12 @@ public class CheckFileHash {
      */
     public boolean hasAValidHash() throws IOException {
         if (this.fileToCheck == null) throw new FileNotFoundException("File to check has not been set!");
-        if (this.expectedFileHash == null || this.typeOfHash == null) throw new NullPointerException("Hash details have not been set!");
+        if (this.expectedFileHash == null || this.typeOfOfHash == null) throw new NullPointerException("Hash details have not been set!");
 
         String actualFileHash = "";
         boolean isHashValid = false;
 
-        switch (this.typeOfHash) {
+        switch (this.typeOfOfHash) {
             case MD5:
                 actualFileHash = DigestUtils.md5Hex(new FileInputStream(this.fileToCheck));
                 if (this.expectedFileHash.equals(actualFileHash)) isHashValid = true;

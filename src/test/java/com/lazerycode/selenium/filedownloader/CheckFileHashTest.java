@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
 
-import static com.lazerycode.selenium.filedownloader.HashType.*;
+import static com.lazerycode.selenium.filedownloader.TypeOfHash.*;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
