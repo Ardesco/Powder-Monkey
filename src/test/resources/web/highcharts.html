@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Highcharts Test</title>
+    <script src="js/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <script src="js/highcharts/2.2/highcharts.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        var columnchart;
+        var linechart;
+        $(document).ready(function () {
+            columnchart = new Highcharts.Chart({
+                chart:{
+                    renderTo:'columnchart',
+                    type:'column'
+                },
+                title:{
+                    text:'Basic Column Chart'
+                },
+                xAxis:{
+                    categories:['Apples', 'Bananas', 'Oranges']
+                },
+                yAxis:{
+                    title:{
+                        text:'Fruit eaten'
+                    }
+                },
+                series:[
+                    {
+                        name:'Jane',
+                        data:[1, 0, 4]
+                    },
+                    {
+                        name:'John',
+                        data:[5, 7, 3]
+                    }
+                ]
+            });
+            linechart = new Highcharts.Chart({
+                chart:{
+                    renderTo:'linechart',
+                    type:'line'
+                },
+                title:{
+                    text:'Basic Line Chart'
+                },
+                xAxis:{
+                    categories:['Apples', 'Bananas', 'Oranges']
+                },
+                yAxis:{
+                    title:{
+                        text:'Fruit eaten'
+                    }
+                },
+                series:[
+                    {
+                        name:'Jane',
+                        data:[1, 0, 4]
+                    },
+                    {
+                        name:'John',
+                        data:[5, 7, 3]
+                    }
+                ],
+                tooltip:{
+                    shared: true,
+                    crosshairs: true
+                }
+            });
+        });
+    </script>
+    <style type="text/css">
+        .chart {
+            width: 700px;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+<div id="columnchart" class="chart"></div>
+<div id="linechart" class="chart"></div>
+</body>
+</html>

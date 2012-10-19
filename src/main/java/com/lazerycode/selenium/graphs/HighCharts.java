@@ -2,7 +2,6 @@ package com.lazerycode.selenium.graphs;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.internal.Locatable;
 import org.openqa.selenium.internal.seleniumemulation.JavascriptLibrary;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.How;
@@ -30,7 +29,7 @@ public class HighCharts {
   private WebElement toolTip;
   @FindBy(how = How.CSS, using = "g.highcharts-legend")
   private WebElement legend;
-  @FindBy(how = How.CSS, using = "g.highcharts-axis-labels")
+  @FindBy(how = How.CSS, using = "g.highcharts-axis")
   private List<WebElement> axisLabels;
 
   public HighCharts(WebDriver driver, WebElement chart) {
@@ -47,6 +46,23 @@ public class HighCharts {
     return wait.until(visibilityOf(this.chart)) != null;
   }
 
+  public boolean isLegendDisplayed() {
+    return legend.isDisplayed();
+  }
+
+  public boolean isTooltipDisplayed() {
+    return wait.until(attributeIsEqualTo(toolTip, "visibility", "visible"));
+  }
+
+  private static ExpectedCondition<Boolean> attributeIsEqualTo(final WebElement element, final String attribute, final String attributeValue) {
+    return new ExpectedCondition<Boolean>() {
+      @Override
+      public Boolean apply(WebDriver driver) {
+        return element.getAttribute(attribute).equals(attributeValue);
+      }
+    };
+  }
+
   private WebElement getXAxisLabels() {
     return axisLabels.get(0);
   }
@@ -61,10 +77,14 @@ public class HighCharts {
     return labels;
   }
 
+  public String[] getXAxisLabelsAsArray(){
+    List<String> xAxisLabels = getXAxisLabelsText();
+    return xAxisLabels.toArray(new String[xAxisLabels.size()]);
+  }
+
   private WebElement getYAxisLabels() {
     return axisLabels.get(1);
   }
-
   public List<String> getYAxisLabelsText() {
     List<String> labels = new ArrayList<String>();
     List<WebElement> yAxisLabels = getYAxisLabels().findElements(By.cssSelector("text"));
@@ -75,28 +95,16 @@ public class HighCharts {
     return labels;
   }
 
-  public boolean isLegendDisplayed() {
-    return legend.isDisplayed();
+  public String[] getYAxisLabelsAsArray(){
+    List<String> yAxisLabels = getYAxisLabelsText();
+    return yAxisLabels.toArray(new String[yAxisLabels.size()]);
   }
 
-
-  public String getToolTipLine(int lineNo) throws NoSuchElementException {
-    List<String> lines = new ArrayList<String>();
-    List<WebElement> toolTipLines = toolTip.findElements(By.cssSelector("text tspan"));
-    for (int i = 0; i < toolTipLines.size(); i++) {
-      WebElement toolTipLine = toolTipLines.get(i);
-      lines.add(toolTipLine.getText());
-    }
-    if (lineNo >= lines.size()) {
-      throw new NoSuchElementException("There is no line " + lineNo + "! There are only " + lines.size() + " lines in the tool tip");
-    }
-    return lines.get(lineNo);
-  }
-
-  public void hoverOverBarChartSeriesAtXAxisPosition(int series, String xAxisLabel) {
+  public void hoverOverColumnChartSeriesAtXAxisPosition(int series, String xAxisLabel) {
     int barNumber = getXAxisLabelsText().indexOf(xAxisLabel);
     WebElement pointToHoverOver = chart.findElements(By.cssSelector("g.highcharts-tracker > g:nth-of-type(" + series + ") > rect")).get(barNumber);
     javascript.callEmbeddedSelenium(driver, "triggerEvent", pointToHoverOver, "mouseover");
+    performAction.moveToElement(pointToHoverOver).perform();
   }
 
   public void hoverOverPointAtXAxisPositionForLineChart(String xAxisLabelValue) {
@@ -104,9 +112,9 @@ public class HighCharts {
     hoverOverPointAtXAxisPositionForLineChartDataPointIndex(barNumber);
   }
 
-  public void hoverOverPointAtXAxisPositionForLineChartDataPointIndex(int barNumber) {
+  public void hoverOverPointAtXAxisPositionForLineChartDataPointIndex(int pointNumber) {
     //Find x position of chart label
-    WebElement xAxisLabel = getXAxisLabels().findElements(By.cssSelector("text")).get(barNumber);
+    WebElement xAxisLabel = getXAxisLabels().findElements(By.cssSelector("text")).get(pointNumber);
     int xPositionOfLabel = extractXAttributeAsInteger(xAxisLabel);
 
     //Get left most point of line on graph
@@ -118,7 +126,7 @@ public class HighCharts {
     WebElement elementToHoverOver = chart.findElement(By.cssSelector("g.highcharts-tracker > g > path"));
 
     javascript.callEmbeddedSelenium(driver, "triggerEvent", elementToHoverOver, "mouseover");
-    performAction.moveToElement(elementToHoverOver).moveByOffset(hoverPoint, 0);
+    performAction.moveToElement(elementToHoverOver).moveByOffset(hoverPoint, 0).perform();
     //TODO Check the above is working with IE and we don't need the hack below
 //    mouse.mouseMove(((Locatable) elementToHoverOver).getCoordinates());
 //    mouse.mouseMove(((Locatable) elementToHoverOver).getCoordinates(), hoverPoint, 0);
@@ -129,16 +137,16 @@ public class HighCharts {
     return xAttribute.intValue();
   }
 
-  public boolean isTooltipDisplayed() {
-    return wait.until(attributeIsEqualTo(toolTip, "visibility", "visible"));
-  }
-
-  public static ExpectedCondition<Boolean> attributeIsEqualTo(final WebElement element, final String attribute, final String attributeValue) {
-    return new ExpectedCondition<Boolean>() {
-      @Override
-      public Boolean apply(WebDriver driver) {
-        return element.getAttribute(attribute).equals(attributeValue);
-      }
-    };
+  public String getToolTipLine(int lineNo) throws NoSuchElementException {
+    List<String> lines = new ArrayList<String>();
+    List<WebElement> toolTipLines = toolTip.findElements(By.cssSelector("text tspan"));
+    for (int i = 0; i < toolTipLines.size(); i++) {
+      WebElement toolTipLine = toolTipLines.get(i);
+      lines.add(toolTipLine.getText());
+    }
+    if (lineNo > lines.size()) {
+      throw new NoSuchElementException("There is no line " + lineNo + "! There are only " + lines.size() + " lines in the tool tip");
+    }
+    return lines.get(lineNo - 1);
   }
 }
