@@ -2,6 +2,7 @@ package com.lazerycode.selenium.graphs;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.internal.Locatable;
 import org.openqa.selenium.internal.seleniumemulation.JavascriptLibrary;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.How;
@@ -103,7 +104,10 @@ public class HighCharts {
   public void hoverOverColumnChartSeriesAtXAxisPosition(int series, String xAxisLabel) {
     int barNumber = getXAxisLabelsText().indexOf(xAxisLabel);
     WebElement pointToHoverOver = chart.findElements(By.cssSelector("g.highcharts-tracker > g:nth-of-type(" + series + ") > rect")).get(barNumber);
+
+    //For browsers not supporting native events
     javascript.callEmbeddedSelenium(driver, "triggerEvent", pointToHoverOver, "mouseover");
+    //For browsers supporting native events
     performAction.moveToElement(pointToHoverOver).perform();
   }
 
@@ -120,16 +124,14 @@ public class HighCharts {
     //Get left most point of line on graph
     WebElement firstItemInDataSeries = getYAxisLabels().findElement(By.cssSelector("text"));
     int dataSeriesLeftMostPoint = extractXAttributeAsInteger(firstItemInDataSeries);
-
     int hoverPoint = xPositionOfLabel - dataSeriesLeftMostPoint;
 
     WebElement elementToHoverOver = chart.findElement(By.cssSelector("g.highcharts-tracker > g > path"));
 
+    //For browsers not supporting native events
     javascript.callEmbeddedSelenium(driver, "triggerEvent", elementToHoverOver, "mouseover");
+    //For browsers supporting native events
     performAction.moveToElement(elementToHoverOver).moveByOffset(hoverPoint, 0).perform();
-    //TODO Check the above is working with IE and we don't need the hack below
-//    mouse.mouseMove(((Locatable) elementToHoverOver).getCoordinates());
-//    mouse.mouseMove(((Locatable) elementToHoverOver).getCoordinates(), hoverPoint, 0);
   }
 
   private int extractXAttributeAsInteger(WebElement xAxisLabel) {

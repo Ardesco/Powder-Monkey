@@ -2,14 +2,13 @@ package com.lazerycode.selenium.charts;
 
 import com.lazerycode.selenium.JettyServer;
 import com.lazerycode.selenium.graphs.HighCharts;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.junit.*;
+import org.openqa.selenium.*;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.ie.InternetExplorerDriver;
+
+import java.awt.*;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -24,22 +23,22 @@ public class HighChartsTest {
 
   @BeforeClass
   public static void start() throws Exception {
+    //Move mouse out of the way so it can't mess about with hover events
+    Robot mouseRemover = new Robot();
+    mouseRemover.mouseMove(1200,0);
     localWebServer = new JettyServer(webServerPort);
     driver = new FirefoxDriver();
+    driver.manage().window().setSize(new Dimension(1024, 768));
   }
 
   @AfterClass
   public static void stop() throws Exception {
     localWebServer.stopJettyServer();
-  }
-
-  @After
-  public void closeWebDriver() {
     driver.close();
   }
 
   @Test
-  public void validateColumnChart(){
+  public void validateColumnChart() {
     driver.get(webServerURL + ":" + webServerPort + "/highcharts.html");
 
     WebElement highChartSVGElement = driver.findElement(By.id("columnchart"));
@@ -73,7 +72,7 @@ public class HighChartsTest {
   }
 
   @Test
-  public void validateLineChart(){
+  public void validateLineChart() {
     driver.get(webServerURL + ":" + webServerPort + "/highcharts.html");
 
     WebElement highChartSVGElement = driver.findElement(By.id("linechart"));
@@ -94,7 +93,7 @@ public class HighChartsTest {
     assertThat(chartObject.getToolTipLine(7), is(equalTo("7")));
 
     String[] EXPECTED_X_AXIS_LABELS = {"Apples", "Bananas", "Oranges"};
-    String[] EXPECTED_Y_AXIS_LABELS = {"-2.5", "0", "2.5", "5", "7.5", "Fruit eaten"};
+    String[] EXPECTED_Y_AXIS_LABELS = {"0", "-2.5", "2.5", "5", "7.5", "Fruit eaten"};
 
     assertThat(chartObject.getXAxisLabelsAsArray(), is(equalTo(EXPECTED_X_AXIS_LABELS)));
     assertThat(chartObject.getYAxisLabelsAsArray(), is(equalTo(EXPECTED_Y_AXIS_LABELS)));
