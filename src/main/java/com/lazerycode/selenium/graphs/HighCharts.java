@@ -2,8 +2,8 @@ package com.lazerycode.selenium.graphs;
 
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.internal.Locatable;
 import org.openqa.selenium.internal.seleniumemulation.JavascriptLibrary;
+import org.openqa.selenium.support.Color;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.How;
 import org.openqa.selenium.support.PageFactory;
@@ -16,15 +16,15 @@ import java.util.List;
 
 import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOf;
 
-public class HighCharts {
+abstract class HighCharts {
 
   private int waitTimeoutInSeconds = 15;
-  private WebDriver driver;
-  private WebElement chart;
-  private WebDriverWait wait;
-  private Mouse mouse;
-  private Actions performAction;
-  private JavascriptLibrary javascript = new JavascriptLibrary();
+  protected WebDriver driver;
+  protected WebElement chart;
+  protected WebDriverWait wait;
+  protected Mouse mouse;
+  protected Actions performAction;
+  protected JavascriptLibrary javascript = new JavascriptLibrary();
 
   @FindBy(how = How.CSS, using = "g.highcharts-tooltip")
   private WebElement toolTip;
@@ -55,53 +55,69 @@ public class HighCharts {
     return wait.until(attributeIsEqualTo(toolTip, "visibility", "visible"));
   }
 
-  private static ExpectedCondition<Boolean> attributeIsEqualTo(final WebElement element, final String attribute, final String attributeValue) {
-    return new ExpectedCondition<Boolean>() {
-      @Override
-      public Boolean apply(WebDriver driver) {
-        return element.getAttribute(attribute).equals(attributeValue);
-      }
-    };
+  public String getToolTipLine(int lineNo) throws NoSuchElementException {
+    List<String> lines = new ArrayList<String>();
+    List<WebElement> toolTipLines = toolTip.findElements(By.cssSelector("text tspan"));
+    for (WebElement toolTipLine : toolTipLines) {
+      lines.add(toolTipLine.getText());
+    }
+    if (lineNo > lines.size()) {
+      throw new NoSuchElementException("There is no line " + lineNo + "! There are only " + lines.size() + " lines in the tool tip");
+    }
+    //We return line - 1 because the lines Array starts a 0 not 1
+    return lines.get(lineNo - 1);
   }
 
-  private WebElement getXAxisLabels() {
+  protected WebElement getXAxisLabels() {
     return axisLabels.get(0);
   }
 
   public List<String> getXAxisLabelsText() {
     List<String> labels = new ArrayList<String>();
     List<WebElement> xAxisLabels = getXAxisLabels().findElements(By.cssSelector("text"));
-    for (int i = 0; i < xAxisLabels.size(); i++) {
-      WebElement xAxisLabel = xAxisLabels.get(i);
+    for (WebElement xAxisLabel : xAxisLabels) {
       labels.add(xAxisLabel.getText());
     }
     return labels;
   }
 
-  public String[] getXAxisLabelsAsArray(){
+  public String[] getXAxisLabelsAsArray() {
     List<String> xAxisLabels = getXAxisLabelsText();
     return xAxisLabels.toArray(new String[xAxisLabels.size()]);
   }
 
-  private WebElement getYAxisLabels() {
+  protected int extractXAttributeAsInteger(WebElement xAxisLabel) {
+    Double xAttribute = Double.parseDouble(xAxisLabel.getAttribute("x"));
+    return xAttribute.intValue();
+  }
+
+  protected Color getSeriesColorAtXAxisPosition(int series, String xAxisLabelValue) {
+    //The series can vary depending on the structure of the chart, by default it is fine but if this doesn't work you may need to tweak the series
+    int barNumber = getXAxisLabelsText().indexOf(xAxisLabelValue);
+    //The below varies depending on the structure of the chart, by default we need to multiply by 4
+    barNumber = barNumber * 4;
+    return Color.fromString(chart.findElement(By.cssSelector(".highcharts-series-group > g:nth-of-type(" + series + ") > rect:nth-of-type(" + barNumber + ")")).getAttribute("fill"));
+  }
+
+  protected WebElement getYAxisLabels() {
     return axisLabels.get(1);
   }
+
   public List<String> getYAxisLabelsText() {
     List<String> labels = new ArrayList<String>();
     List<WebElement> yAxisLabels = getYAxisLabels().findElements(By.cssSelector("text"));
-    for (int i = 0; i < yAxisLabels.size(); i++) {
-      WebElement yAxisLabel = yAxisLabels.get(i);
+    for (WebElement yAxisLabel : yAxisLabels) {
       labels.add(yAxisLabel.getText());
     }
     return labels;
   }
 
-  public String[] getYAxisLabelsAsArray(){
+  public String[] getYAxisLabelsAsArray() {
     List<String> yAxisLabels = getYAxisLabelsText();
     return yAxisLabels.toArray(new String[yAxisLabels.size()]);
   }
 
-  public void hoverOverColumnChartSeriesAtXAxisPosition(int series, String xAxisLabel) {
+  protected void hoverOverColumnOrBarChartSeriesAtXAxisPosition(int series, String xAxisLabel) {
     int barNumber = getXAxisLabelsText().indexOf(xAxisLabel);
     WebElement pointToHoverOver = chart.findElements(By.cssSelector("g.highcharts-tracker > g:nth-of-type(" + series + ") > rect")).get(barNumber);
 
@@ -111,44 +127,12 @@ public class HighCharts {
     performAction.moveToElement(pointToHoverOver).perform();
   }
 
-  public void hoverOverPointAtXAxisPositionForLineChart(String xAxisLabelValue) {
-    int barNumber = getXAxisLabelsText().indexOf(xAxisLabelValue);
-    hoverOverPointAtXAxisPositionForLineChartDataPointIndex(barNumber);
-  }
-
-  public void hoverOverPointAtXAxisPositionForLineChartDataPointIndex(int pointNumber) {
-    //Find x position of chart label
-    WebElement xAxisLabel = getXAxisLabels().findElements(By.cssSelector("text")).get(pointNumber);
-    int xPositionOfLabel = extractXAttributeAsInteger(xAxisLabel);
-
-    //Get left most point of line on graph
-    WebElement firstItemInDataSeries = getYAxisLabels().findElement(By.cssSelector("text"));
-    int dataSeriesLeftMostPoint = extractXAttributeAsInteger(firstItemInDataSeries);
-    int hoverPoint = xPositionOfLabel - dataSeriesLeftMostPoint;
-
-    WebElement elementToHoverOver = chart.findElement(By.cssSelector("g.highcharts-tracker > g > path"));
-
-    //For browsers not supporting native events
-    javascript.callEmbeddedSelenium(driver, "triggerEvent", elementToHoverOver, "mouseover");
-    //For browsers supporting native events
-    performAction.moveToElement(elementToHoverOver).moveByOffset(hoverPoint, 0).perform();
-  }
-
-  private int extractXAttributeAsInteger(WebElement xAxisLabel) {
-    Double xAttribute = Double.parseDouble(xAxisLabel.getAttribute("x"));
-    return xAttribute.intValue();
-  }
-
-  public String getToolTipLine(int lineNo) throws NoSuchElementException {
-    List<String> lines = new ArrayList<String>();
-    List<WebElement> toolTipLines = toolTip.findElements(By.cssSelector("text tspan"));
-    for (int i = 0; i < toolTipLines.size(); i++) {
-      WebElement toolTipLine = toolTipLines.get(i);
-      lines.add(toolTipLine.getText());
-    }
-    if (lineNo > lines.size()) {
-      throw new NoSuchElementException("There is no line " + lineNo + "! There are only " + lines.size() + " lines in the tool tip");
-    }
-    return lines.get(lineNo - 1);
+  private static ExpectedCondition<Boolean> attributeIsEqualTo(final WebElement element, final String attribute, final String attributeValue) {
+    return new ExpectedCondition<Boolean>() {
+      @Override
+      public Boolean apply(WebDriver driver) {
+        return element.getAttribute(attribute).equals(attributeValue);
+      }
+    };
   }
 }
