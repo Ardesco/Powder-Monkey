@@ -53,7 +53,7 @@ public class HighChartsTest {
     assertThat(chartObject.isLegendDisplayed(), is(equalTo(true)));
 
     chartObject.hoverOverPrimarySeriesAtXAxisLabel("Bananas");
-    assertThat(chartObject.getPrimarySeriesColourForXAxisLabel("Bananas").asHex(), is(equalTo(Color.fromString("#4572A7").asHex())));
+    assertThat(chartObject.getPrimarySeriesColourForXAxisLabel("Bananas"), is(equalTo(Color.fromString("#4572A7"))));
 
     assertThat(chartObject.isTooltipDisplayed(), is(equalTo(true)));
     assertThat(chartObject.getToolTipLine(1), is(equalTo("Bananas")));
@@ -62,7 +62,7 @@ public class HighChartsTest {
     assertThat(chartObject.getToolTipLine(4), is(equalTo("0")));
 
     chartObject.hoverOverSecondarySeriesAtXAxisLabel("Bananas");
-    assertThat(chartObject.getSecondarySeriesColourForXAxisLabel("Bananas").asHex(), is(equalTo(Color.fromString("#AA4643").asHex())));
+    assertThat(chartObject.getSecondarySeriesColourForXAxisLabel("Bananas"), is(equalTo(Color.fromString("#AA4643"))));
 
     assertThat(chartObject.isTooltipDisplayed(), is(equalTo(true)));
     assertThat(chartObject.getToolTipLine(1), is(equalTo("Bananas")));
