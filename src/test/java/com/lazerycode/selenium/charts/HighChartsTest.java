@@ -88,7 +88,7 @@ public class HighChartsTest {
     assertThat(chartObject.isChartDisplayed(), is(equalTo(true)));
     assertThat(chartObject.isLegendDisplayed(), is(equalTo(true)));
 
-    chartObject.hoverOverMiddleOfGraphAtXAxisLabel("Bananas");
+    chartObject.hoverOverPointOfGraphAtXAxisLabel("Bananas");
 
     assertThat(chartObject.isTooltipDisplayed(), is(equalTo(true)));
     assertThat(chartObject.getToolTipLine(1), is(equalTo("Bananas")));

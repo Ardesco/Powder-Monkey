@@ -1,6 +1,9 @@
 package com.lazerycode.selenium.graphs;
 
-import org.openqa.selenium.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.internal.seleniumemulation.JavascriptLibrary;
 import org.openqa.selenium.support.Color;
@@ -9,6 +12,7 @@ import org.openqa.selenium.support.How;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.pagefactory.DefaultElementLocatorFactory;
 import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.ArrayList;
@@ -22,7 +26,6 @@ abstract class HighCharts {
   protected WebDriver driver;
   protected WebElement chart;
   protected WebDriverWait wait;
-  protected Mouse mouse;
   protected Actions performAction;
   protected JavascriptLibrary javascript = new JavascriptLibrary();
 
@@ -39,7 +42,6 @@ abstract class HighCharts {
     this.chart = chart;
 
     wait = new WebDriverWait(driver, waitTimeoutInSeconds, 100);
-    mouse = ((HasInputDevices) driver).getMouse();
     performAction = new Actions(driver);
   }
 
@@ -52,7 +54,7 @@ abstract class HighCharts {
   }
 
   public boolean isTooltipDisplayed() {
-    return wait.until(attributeIsEqualTo(toolTip, "visibility", "visible"));
+    return wait.until(visibilityOf(toolTip)) != null;
   }
 
   public String getToolTipLine(int lineNo) throws NoSuchElementException {
