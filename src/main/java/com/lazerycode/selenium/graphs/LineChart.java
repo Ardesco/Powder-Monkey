@@ -65,7 +65,7 @@ public class LineChart extends HighCharts {
   private PlotPoint getPlotOffset() {
     String[] points = plotContainer.getAttribute("transform").split(",");
     BigDecimal xOffset = BigDecimal.valueOf(Integer.valueOf(points[0].replaceAll("[^\\d]", "")).doubleValue());
-    BigDecimal yOffset = BigDecimal.valueOf(Integer.valueOf(points[1].replaceAll("[^\\d]", "")).doubleValue());
+    BigDecimal yOffset = BigDecimal.valueOf(Integer.valueOf(points[1].replaceAll("[^\\d]", "")).doubleValue() - 1);
     return new PlotPoint(xOffset, yOffset);
   }
 }

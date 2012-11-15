@@ -12,7 +12,6 @@ import org.openqa.selenium.support.How;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.pagefactory.DefaultElementLocatorFactory;
 import org.openqa.selenium.support.ui.ExpectedCondition;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.ArrayList;
@@ -22,7 +21,7 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOf;
 
 abstract class HighCharts {
 
-  private int waitTimeoutInSeconds = 15;
+  private final int waitTimeoutInSeconds = 15;
   protected WebDriver driver;
   protected WebElement chart;
   protected WebDriverWait wait;
