@@ -5,7 +5,7 @@ import org.openqa.selenium.WebElement;
 
 import java.util.HashMap;
 
-public class UsefulTools {
+public class WebElementTools {
 
   static public HashMap<String, String> getWebElementLocator(WebElement element) {
     HashMap<String, String> locator = new HashMap<String, String>();
