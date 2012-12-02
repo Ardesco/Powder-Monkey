@@ -73,6 +73,16 @@ public class RobotPowered {
     mouseObject.waitForIdle();
   }
 
+  public void robotPoweredMouseDown() {
+    mouseObject.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+    mouseObject.waitForIdle();
+  }
+
+  public void robotPoweredMouseUp() {
+    mouseObject.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+    mouseObject.waitForIdle();
+  }
+
   public void robotPoweredClick() {
     mouseObject.mousePress(InputEvent.BUTTON1_DOWN_MASK);
     mouseObject.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
