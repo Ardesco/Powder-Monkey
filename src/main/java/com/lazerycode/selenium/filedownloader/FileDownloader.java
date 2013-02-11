@@ -46,6 +46,7 @@ public class FileDownloader {
     private boolean followRedirects = true;
     private boolean mimicWebDriverCookieState = true;
     private int httpStatusOfLastDownloadAttempt = 0;
+    private BasicCookieStore mimicWebDriverCookieStore = new BasicCookieStore();
 
     public FileDownloader(WebDriver driverObject) {
         this.driver = driverObject;
@@ -127,7 +128,6 @@ public class FileDownloader {
      * @return
      */
     private BasicCookieStore mimicCookieState(Set<Cookie> seleniumCookieSet) {
-        BasicCookieStore mimicWebDriverCookieStore = new BasicCookieStore();
         for (Cookie seleniumCookie : seleniumCookieSet) {
             BasicClientCookie duplicateCookie = new BasicClientCookie(seleniumCookie.getName(), seleniumCookie.getValue());
             duplicateCookie.setDomain(seleniumCookie.getDomain());
