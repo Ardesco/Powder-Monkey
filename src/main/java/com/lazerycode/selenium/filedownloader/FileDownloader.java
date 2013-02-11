@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.Set;
 
 public class FileDownloader {
@@ -138,6 +139,35 @@ public class FileDownloader {
         }
 
         return mimicWebDriverCookieStore;
+    }
+    
+    /**
+     * Modify the domain of a cookie mimicked from WebDriver cookies
+     *
+     * @param cookieName : Name of cookie to modify
+     * @param domain : Domain value to set for modified cookie
+     * @return
+     */
+    public void modifyMimickedCookieDomain(String cookieName, String domain) {
+    	BasicHttpContext localContext = new BasicHttpContext();
+    	List<org.apache.http.cookie.Cookie> mimickedCookies = mimicWebDriverCookieStore.getCookies();
+    	
+    	if ((mimickedCookies.isEmpty()) && this.mimicWebDriverCookieState) {
+    	   LOG.info("Mimic WebDriver cookie state: " + this.mimicWebDriverCookieState);
+           localContext.setAttribute(ClientContext.COOKIE_STORE, mimicCookieState(this.driver.manage().getCookies()));
+        }
+    	
+    	for (org.apache.http.cookie.Cookie mimickedCookie : mimickedCookies) {
+    		if (mimickedCookie.getName() == cookieName) {
+    			LOG.info("Modify domain of mimicked WebDriver cookie: " + mimickedCookie.getName());
+    		    BasicClientCookie modCookie = new BasicClientCookie(mimickedCookie.getName(), mimickedCookie.getValue());
+    		    modCookie.setExpiryDate(mimickedCookie.getExpiryDate());
+    		    modCookie.setPath(mimickedCookie.getPath());
+    		    modCookie.setSecure(mimickedCookie.isSecure());
+    		    modCookie.setDomain(domain);
+    		    mimicWebDriverCookieStore.addCookie(modCookie);
+    		}
+    	}
     }
 
     /**
