@@ -36,7 +36,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 import java.util.Set;
 
 public class FileDownloader {
@@ -47,7 +46,10 @@ public class FileDownloader {
     private boolean followRedirects = true;
     private boolean mimicWebDriverCookieState = true;
     private int httpStatusOfLastDownloadAttempt = 0;
-    private BasicCookieStore mimicWebDriverCookieStore = new BasicCookieStore();
+    private static BasicCookieStore mimicWebDriverCookieStore = new BasicCookieStore();
+    private boolean doVerifyDomain = false;
+    private String nameOfCookieToVerify = "";
+    private String cookieDomainToVerify = "";
 
     public FileDownloader(WebDriver driverObject) {
         this.driver = driverObject;
@@ -78,6 +80,18 @@ public class FileDownloader {
      */
     public void localDownloadPath(String filePath) {
         this.localDownloadPath = filePath;
+    }
+    
+    /**
+     * Set values necessary to trigger a cookie domain verification.
+     *
+     * @param cookieName Name of the cookie to check.
+     * @param domainValueToVerify Expected domain for checked cookie.
+     */
+    public void verifyCookieDomainWhenDownloading(String cookieName, String domainValueToVerify) {
+    	this.doVerifyDomain = true;
+    	this.nameOfCookieToVerify = cookieName;
+    	this.cookieDomainToVerify = domainValueToVerify;
     }
 
     /**
@@ -131,7 +145,15 @@ public class FileDownloader {
     private BasicCookieStore mimicCookieState(Set<Cookie> seleniumCookieSet) {
         for (Cookie seleniumCookie : seleniumCookieSet) {
             BasicClientCookie duplicateCookie = new BasicClientCookie(seleniumCookie.getName(), seleniumCookie.getValue());
-            duplicateCookie.setDomain(seleniumCookie.getDomain());
+            String dupName = duplicateCookie.getName();
+            if ((doVerifyDomain) && (nameOfCookieToVerify.equals(dupName))){
+            	LOG.info("Verifying and setting domain " + cookieDomainToVerify + " for cookie " + nameOfCookieToVerify);
+            	if (duplicateCookie.getDomain() != cookieDomainToVerify ) {
+            		duplicateCookie.setDomain(cookieDomainToVerify);
+            	}
+            } else {
+            	duplicateCookie.setDomain(seleniumCookie.getDomain());
+            }
             duplicateCookie.setSecure(seleniumCookie.isSecure());
             duplicateCookie.setExpiryDate(seleniumCookie.getExpiry());
             duplicateCookie.setPath(seleniumCookie.getPath());
@@ -139,35 +161,6 @@ public class FileDownloader {
         }
 
         return mimicWebDriverCookieStore;
-    }
-    
-    /**
-     * Modify the domain of a cookie mimicked from WebDriver cookies
-     *
-     * @param cookieName : Name of cookie to modify
-     * @param domain : Domain value to set for modified cookie
-     * @return
-     */
-    public void modifyMimickedCookieDomain(String cookieName, String domain) {
-    	BasicHttpContext localContext = new BasicHttpContext();
-    	List<org.apache.http.cookie.Cookie> mimickedCookies = mimicWebDriverCookieStore.getCookies();
-    	
-    	if ((mimickedCookies.isEmpty()) && this.mimicWebDriverCookieState) {
-    	   LOG.info("Mimic WebDriver cookie state: " + this.mimicWebDriverCookieState);
-           localContext.setAttribute(ClientContext.COOKIE_STORE, mimicCookieState(this.driver.manage().getCookies()));
-        }
-    	
-    	for (org.apache.http.cookie.Cookie mimickedCookie : mimickedCookies) {
-    		if (mimickedCookie.getName() == cookieName) {
-    			LOG.info("Modify domain of mimicked WebDriver cookie: " + mimickedCookie.getName());
-    		    BasicClientCookie modCookie = new BasicClientCookie(mimickedCookie.getName(), mimickedCookie.getValue());
-    		    modCookie.setExpiryDate(mimickedCookie.getExpiryDate());
-    		    modCookie.setPath(mimickedCookie.getPath());
-    		    modCookie.setSecure(mimickedCookie.isSecure());
-    		    modCookie.setDomain(domain);
-    		    mimicWebDriverCookieStore.addCookie(modCookie);
-    		}
-    	}
     }
 
     /**
