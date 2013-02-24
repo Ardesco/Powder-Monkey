@@ -34,8 +34,8 @@ public class RobotPowered {
     int browserFurnitureOffsetY = browserHeight - pageHeight;
 
     //Get the coordinates of the WebElement on the page and calculate the centre point
-    int webElementX = ((Locatable) element).getCoordinates().getLocationOnScreen().x + Math.round(element.getSize().width / 2);
-    int webElementY = ((Locatable) element).getCoordinates().getLocationOnScreen().y + Math.round(element.getSize().height / 2);
+    int webElementX = ((Locatable) element).getCoordinates().inViewPort().x + Math.round(element.getSize().width / 2);
+    int webElementY = ((Locatable) element).getCoordinates().inViewPort().y + Math.round(element.getSize().height / 2);
 
     //Calculate the correct X/Y coordinates based upon the browser furniture offset and the position of the browser on the desktop
     int xPosition = driver.manage().window().getPosition().x + browserFurnitureOffsetX + webElementX;
