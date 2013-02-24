@@ -46,6 +46,10 @@ public class FileDownloader {
     private boolean followRedirects = true;
     private boolean mimicWebDriverCookieState = true;
     private int httpStatusOfLastDownloadAttempt = 0;
+    private static BasicCookieStore mimicWebDriverCookieStore = new BasicCookieStore();
+    private boolean doVerifyDomain = false;
+    private String nameOfCookieToVerify = "";
+    private String cookieDomainToVerify = "";
 
     public FileDownloader(WebDriver driverObject) {
         this.driver = driverObject;
@@ -76,6 +80,18 @@ public class FileDownloader {
      */
     public void localDownloadPath(String filePath) {
         this.localDownloadPath = filePath;
+    }
+    
+    /**
+     * Set values necessary to trigger a cookie domain verification.
+     *
+     * @param cookieName Name of the cookie to check.
+     * @param domainValueToVerify Expected domain for checked cookie.
+     */
+    public void verifyCookieDomainWhenDownloading(String cookieName, String domainValueToVerify) {
+    	this.doVerifyDomain = true;
+    	this.nameOfCookieToVerify = cookieName;
+    	this.cookieDomainToVerify = domainValueToVerify;
     }
 
     /**
@@ -127,10 +143,17 @@ public class FileDownloader {
      * @return
      */
     private BasicCookieStore mimicCookieState(Set<Cookie> seleniumCookieSet) {
-        BasicCookieStore mimicWebDriverCookieStore = new BasicCookieStore();
         for (Cookie seleniumCookie : seleniumCookieSet) {
             BasicClientCookie duplicateCookie = new BasicClientCookie(seleniumCookie.getName(), seleniumCookie.getValue());
-            duplicateCookie.setDomain(seleniumCookie.getDomain());
+            String dupName = duplicateCookie.getName();
+            if ((doVerifyDomain) && (nameOfCookieToVerify.equals(dupName))){
+            	LOG.info("Verifying and setting domain " + cookieDomainToVerify + " for cookie " + nameOfCookieToVerify);
+            	if (duplicateCookie.getDomain() != cookieDomainToVerify ) {
+            		duplicateCookie.setDomain(cookieDomainToVerify);
+            	}
+            } else {
+            	duplicateCookie.setDomain(seleniumCookie.getDomain());
+            }
             duplicateCookie.setSecure(seleniumCookie.isSecure());
             duplicateCookie.setExpiryDate(seleniumCookie.getExpiry());
             duplicateCookie.setPath(seleniumCookie.getPath());

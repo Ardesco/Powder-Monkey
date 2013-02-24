@@ -45,6 +45,10 @@ public class URLStatusChecker {
     private boolean mimicWebDriverCookieState = true;
     private boolean followRedirects = false;
     private RequestMethod httpRequestMethod = RequestMethod.GET;
+    private BasicCookieStore mimicWebDriverCookieStore = new BasicCookieStore();
+    private boolean doVerifyDomain = false;
+    private String nameOfCookieToVerify = "";
+    private String cookieDomainToVerify = "";
 
     public URLStatusChecker(WebDriver driverObject) throws MalformedURLException, URISyntaxException {
         this.driver = driverObject;
@@ -100,6 +104,18 @@ public class URLStatusChecker {
     public void followRedirects(Boolean value) {
         this.followRedirects = value;
     }
+    
+    /**
+     * Set values necessary to trigger a cookie domain verification.
+     *
+     * @param cookieName Name of the cookie to check.
+     * @param domainValueToVerify Expected domain for checked cookie.
+     */
+    public void verifyCookieDomainWhenCheckingStatus(String cookieName, String domainValueToVerify) {
+    	this.doVerifyDomain = true;
+    	this.nameOfCookieToVerify = cookieName;
+    	this.cookieDomainToVerify = domainValueToVerify;
+    }
 
     /**
      * Perform an HTTP Status check and return the response code
@@ -147,10 +163,17 @@ public class URLStatusChecker {
      * @return
      */
     private BasicCookieStore mimicCookieState(Set<Cookie> seleniumCookieSet) {
-        BasicCookieStore mimicWebDriverCookieStore = new BasicCookieStore();
         for (Cookie seleniumCookie : seleniumCookieSet) {
             BasicClientCookie duplicateCookie = new BasicClientCookie(seleniumCookie.getName(), seleniumCookie.getValue());
-            duplicateCookie.setDomain(seleniumCookie.getDomain());
+            String dupName = duplicateCookie.getName();
+            if ((doVerifyDomain) && (nameOfCookieToVerify.equals(dupName))){
+            	LOG.info("Verifying and setting domain " + cookieDomainToVerify + " for cookie " + nameOfCookieToVerify);
+            	if (duplicateCookie.getDomain() != cookieDomainToVerify ) {
+            		duplicateCookie.setDomain(cookieDomainToVerify);
+            	}
+            } else {
+            	duplicateCookie.setDomain(seleniumCookie.getDomain());
+            }
             duplicateCookie.setSecure(seleniumCookie.isSecure());
             duplicateCookie.setExpiryDate(seleniumCookie.getExpiry());
             duplicateCookie.setPath(seleniumCookie.getPath());
@@ -160,3 +183,5 @@ public class URLStatusChecker {
         return mimicWebDriverCookieStore;
     }
 }
+
+
