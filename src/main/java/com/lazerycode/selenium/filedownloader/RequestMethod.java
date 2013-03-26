@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.lazerycode.selenium.urlstatuschecker;
+package com.lazerycode.selenium.filedownloader;
 
 import org.apache.http.client.methods.*;
 

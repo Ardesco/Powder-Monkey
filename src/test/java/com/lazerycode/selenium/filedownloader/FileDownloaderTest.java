@@ -27,6 +27,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 import java.io.File;
+import java.net.URI;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -34,46 +35,184 @@ import static org.junit.Assert.assertThat;
 
 public class FileDownloaderTest {
 
-    private static WebDriver driver;
-    private static JettyServer localWebServer;
-    private static int webServerPort = 9081;
-    private String webServerURL = "http://localhost";
+  private static JettyServer localWebServer;
+  private static String webServerURL = "http://localhost";
+  private static int webServerPort = 9081;
+  private static WebDriver driver;
+  private static URI downloadURI200;
+  private static URI downloadURI404;
 
-    @BeforeClass
-    public static void start() throws Exception {
-        localWebServer = new JettyServer(webServerPort);
-        driver = new HtmlUnitDriver();
-    }
+  @BeforeClass
+  public static void start() throws Exception {
+    localWebServer = new JettyServer(webServerPort);
+    downloadURI200 = new URI(webServerURL + ":" + webServerPort + "/downloadTest.html");
+    downloadURI404 = new URI(webServerURL + ":" + webServerPort + "/doesNotExist.html");
+    driver = new HtmlUnitDriver();
+  }
 
-    @AfterClass
-    public static void stop() throws Exception {
-        localWebServer.stopJettyServer();
-    }
+  @AfterClass
+  public static void stop() throws Exception {
+    localWebServer.stopJettyServer();
+  }
 
-    @After
-    public void closeWebDriver() {
-        driver.close();
-    }
+  @After
+  public void closeWebDriver() {
+    driver.close();
+  }
 
-    @Test
-    public void downloadAFile() throws Exception {
-        FileDownloader downloadTestFile = new FileDownloader(driver);
-        driver.get(webServerURL + ":" + webServerPort + "/downloadTest.html");
-        WebElement downloadLink = driver.findElement(By.id("fileToDownload"));
-        String downloadedFileAbsoluteLocation = downloadTestFile.downloadFile(downloadLink);
+  @Test
+  public void statusCode200FromString() throws Exception {
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    downloadHandler.setURI(webServerURL + ":" + webServerPort + "/downloadTest.html");
+    downloadHandler.setHTTPRequestMethod(RequestMethod.GET);
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(200)));
+  }
 
-        assertThat(new File(downloadedFileAbsoluteLocation).exists(), is(equalTo(true)));
-        assertThat(downloadTestFile.getHTTPStatusOfLastDownloadAttempt(), is(equalTo(200)));
-    }
+  @Test
+  public void statusCode404FromString() throws Exception {
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    downloadHandler.setURI(webServerURL + ":" + webServerPort + "/doesNotExist.html");
+    downloadHandler.setHTTPRequestMethod(RequestMethod.GET);
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(404)));
+  }
 
-    @Test
-    public void downloadAnImage() throws Exception {
-        FileDownloader downloadTestFile = new FileDownloader(driver);
-        driver.get(webServerURL + ":" + webServerPort + "/downloadTest.html");
-        WebElement image = driver.findElement(By.id("ebselenImage"));
-        String downloadedImageAbsoluteLocation = downloadTestFile.downloadImage(image);
+  @Test
+  public void statusCode200FromURI() throws Exception {
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    downloadHandler.setURI(downloadURI200);
+    downloadHandler.setHTTPRequestMethod(RequestMethod.GET);
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(200)));
+  }
 
-        assertThat(new File(downloadedImageAbsoluteLocation).exists(), is(equalTo(true)));
-        assertThat(downloadTestFile.getHTTPStatusOfLastDownloadAttempt(), is(equalTo(200)));
-    }
+  @Test
+  public void statusCode404FromURI() throws Exception {
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    downloadHandler.setURI(downloadURI404);
+    downloadHandler.setHTTPRequestMethod(RequestMethod.GET);
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(404)));
+  }
+
+  @Test
+  public void statusCode200FromURL() throws Exception {
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    downloadHandler.setURI(downloadURI200.toURL());
+    downloadHandler.setHTTPRequestMethod(RequestMethod.GET);
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(200)));
+  }
+
+  @Test
+  public void statusCode404FromURL() throws Exception {
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    downloadHandler.setURI(downloadURI404.toURL());
+    downloadHandler.setHTTPRequestMethod(RequestMethod.GET);
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(404)));
+  }
+
+  @Test
+  public void statusCode200FromURLUsingHead() throws Exception {
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    downloadHandler.setURI(downloadURI200.toURL());
+    downloadHandler.setHTTPRequestMethod(RequestMethod.HEAD);
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(200)));
+  }
+
+  @Test
+  public void statusCode404FromURLUsingHead() throws Exception {
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    downloadHandler.setURI(downloadURI404.toURL());
+    downloadHandler.setHTTPRequestMethod(RequestMethod.HEAD);
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(404)));
+  }
+
+  @Test
+  public void statusCode200FromURLUsingOptions() throws Exception {
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    downloadHandler.setURI(downloadURI200.toURL());
+    downloadHandler.setHTTPRequestMethod(RequestMethod.OPTIONS);
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(200)));
+  }
+
+  @Test
+  public void statusCode200FromURLUsingPost() throws Exception {
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    downloadHandler.setURI(downloadURI200.toURL());
+    downloadHandler.setHTTPRequestMethod(RequestMethod.POST);
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(200)));
+  }
+
+  @Test
+  public void statusCode405FromURLUsingPut() throws Exception {
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    downloadHandler.setURI(downloadURI200.toURL());
+    downloadHandler.setHTTPRequestMethod(RequestMethod.PUT);
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(405)));
+  }
+
+  @Test
+  public void statusCode405FromURLUsingTrace() throws Exception {
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    downloadHandler.setURI(downloadURI200.toURL());
+    downloadHandler.setHTTPRequestMethod(RequestMethod.TRACE);
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(405)));
+  }
+
+  @Test
+  public void statusCode405FromURLUsingDelete() throws Exception {
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    downloadHandler.setURI(downloadURI200.toURL());
+    downloadHandler.setHTTPRequestMethod(RequestMethod.DELETE);
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(405)));
+  }
+
+  @Test
+  public void downloadAFile() throws Exception {
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    driver.get(webServerURL + ":" + webServerPort + "/downloadTest.html");
+    WebElement downloadLink = driver.findElement(By.id("fileToDownload"));
+    downloadHandler.setURISpecifiedInAnchorElement(downloadLink);
+    File downloadedFile = downloadHandler.downloadFile();
+
+    assertThat(downloadedFile.exists(), is(equalTo(true)));
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(200)));
+  }
+
+  @Test
+  public void downloadAnImage() throws Exception {
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    driver.get(webServerURL + ":" + webServerPort + "/downloadTest.html");
+    WebElement image = driver.findElement(By.id("ebselenImage"));
+    downloadHandler.setURISpecifiedInImageElement(image);
+    File downloadedFile = downloadHandler.downloadFile();
+
+    assertThat(downloadedFile.exists(), is(equalTo(true)));
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(200)));
+  }
+
+  @Test
+  public void downloadAFileFollowingRedirects() throws Exception {
+    //TODO modify test page to set a redirect to file download
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    driver.get(webServerURL + ":" + webServerPort + "/downloadTest.html");
+    WebElement downloadLink = driver.findElement(By.id("fileToDownload"));
+    downloadHandler.setURISpecifiedInAnchorElement(downloadLink);
+    downloadHandler.followRedirectsWhenDownloading(true);
+    File downloadedFile = downloadHandler.downloadFile();
+
+    assertThat(downloadedFile.exists(), is(equalTo(true)));
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(200)));
+  }
+
+  @Test
+  public void downloadAFileWhilstMimicingSeleniumCookies() throws Exception {
+    //TODO modify test page to require a cookie for download
+    FileDownloader downloadHandler = new FileDownloader(driver);
+    driver.get(webServerURL + ":" + webServerPort + "/downloadTest.html");
+    WebElement downloadLink = driver.findElement(By.id("fileToDownload"));
+    downloadHandler.setURISpecifiedInAnchorElement(downloadLink);
+    downloadHandler.mimicWebDriverCookieState(true);
+    File downloadedFile = downloadHandler.downloadFile();
+
+    assertThat(downloadedFile.exists(), is(equalTo(true)));
+    assertThat(downloadHandler.getLinkHTTPStatus(), is(equalTo(200)));
+  }
 }
