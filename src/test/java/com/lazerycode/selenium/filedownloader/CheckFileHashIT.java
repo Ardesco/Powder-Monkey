@@ -27,7 +27,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class CheckFileHashTest {
+public class CheckFileHashIT {
 
     private final URL testFile = this.getClass().getResource("/download.zip");
 

@@ -3,7 +3,7 @@ package com.lazerycode.selenium.tools;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.internal.Locatable;
+import org.openqa.selenium.interactions.Locatable;
 
 import java.awt.*;
 import java.awt.event.InputEvent;

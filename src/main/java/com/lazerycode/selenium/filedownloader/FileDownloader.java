@@ -66,7 +66,7 @@ public class FileDownloader {
   /**
    * Mimic the cookie state of WebDriver (Defaults to true)
    * This will enable you to access files that are only available when logged in.
-   * If set to false the connection will be made as an anonymouse user
+   * If set to false the connection will be made as an anonymous user
    *
    * @param mimicWebDriverCookies boolean
    */
@@ -199,7 +199,9 @@ public class FileDownloader {
     try {
       httpStatusCode = fileToDownload.getStatusLine().getStatusCode();
     } finally {
-      fileToDownload.getEntity().getContent().close();
+      if(null != fileToDownload.getEntity()) {
+        fileToDownload.getEntity().getContent().close();
+      }
     }
 
     return httpStatusCode;

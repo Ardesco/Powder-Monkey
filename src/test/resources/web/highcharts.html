@@ -34,7 +34,14 @@
                         name:'John',
                         data:[5, 7, 3]
                     }
-                ]
+                ],
+                plotOptions: {
+                    series: {
+                        animation: {
+                            duration: 50
+                        }
+                    }
+                }
             });
             linechart = new Highcharts.Chart({
                 chart:{
@@ -64,7 +71,14 @@
                 ],
                 tooltip:{
                     shared: true,
-                    crosshairs: true
+                    crosshairs: true,
+                },
+                plotOptions: {
+                    series: {
+                        animation: {
+                            duration: 50
+                        }
+                    }
                 }
             });
         });
