@@ -17,6 +17,7 @@
 package com.lazerycode.selenium.filedownloader;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -69,11 +70,11 @@ public class CheckFileHash {
 
         switch (this.typeOfOfHash) {
             case MD5:
-                actualFileHash = DigestUtils.md5Hex(new FileInputStream(this.fileToCheck));
+                actualFileHash = DigestUtils.md5Hex(IOUtils.toByteArray(new FileInputStream(this.fileToCheck)));
                 if (this.expectedFileHash.equals(actualFileHash)) isHashValid = true;
                 break;
             case SHA1:
-                actualFileHash = DigestUtils.shaHex(new FileInputStream(this.fileToCheck));
+                actualFileHash = DigestUtils.shaHex(IOUtils.toByteArray(new FileInputStream(this.fileToCheck)));
                 if (this.expectedFileHash.equals(actualFileHash)) isHashValid = true;
                 break;
         }
